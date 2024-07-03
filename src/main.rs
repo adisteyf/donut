@@ -4,11 +4,33 @@ use std::io;
 use std::io::{Read, Write};
 use std::process::Command;
 
+fn count_chars(file_path: &str) -> usize {
+    let mut file = fs::File::open(file_path).expect("Unable to open file");
+    let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer).expect("Unable to read file");
+
+    buffer.len()
+}
+
 fn vernam_cipher(key: &[u8], data: &[u8]) -> Vec<u8> {
     key.iter()
         .zip(data.iter())
         .map(|(key_byte, data_byte)| key_byte ^ data_byte)
         .collect()
+}
+
+fn dup_key(word: &str, target_length: usize) -> String {
+    let mut duplicated_word = String::new();
+    let mut current_length = word.len();
+
+    while current_length < target_length {
+        duplicated_word.push_str(word);
+        current_length += word.len();
+    }
+
+    duplicated_word.push_str(&word[..(target_length - duplicated_word.len())]);
+
+    duplicated_word
 }
 
 fn main() {
@@ -19,8 +41,10 @@ fn main() {
         .read_line(&mut input)
         .expect("Failed to read line");
 
-    let key = input.as_bytes();
     let input_file_path = "test.jar";
+    let binding = dup_key(input.as_str(), count_chars(input_file_path));
+
+    let key = binding.as_bytes();
     let output_file_path = ".running.jar";
 
     let mut input_file = File::open(input_file_path).expect("Unable to open input file");
